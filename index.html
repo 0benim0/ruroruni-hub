@@ -92,6 +92,7 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
     <div class="wallet-status" id="walletStatus" onclick="toggleWallet()">
       <span id="walletText">🔌 Connect</span>
     </div>
+    <button onclick="debugWallet()" style="padding:8px 12px;background:#ff6b6b;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:11px;font-weight:600;">🐛 Debug</button>
   </div>
 </header>
 
@@ -207,6 +208,7 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
     
     <div class="global-stat">
       Available: <span id="nftAvailable">9999</span> / 9999
+      <button onclick="loadContractData()" style="margin-left:10px;padding:4px 8px;background:#00d9ff;border:none;border-radius:4px;color:#000;cursor:pointer;font-weight:600;font-size:11px;">🔄 Refresh</button>
     </div>
     <button class="btn" id="nftBtn" onclick="mintNFT()" style="width:100%;margin-bottom:15px;">Mint Checkmate NFT</button>
     <div id="nftAlert"></div>
@@ -361,6 +363,24 @@ async function switchChain() {
   provider = null;
   contract = null;
   updateUI();
+}
+
+// ============ DEBUG ============
+function debugWallet() {
+  console.clear();
+  console.log('=== WALLET DEBUG INFO ===');
+  console.log('window.ethereum:', window.ethereum ? '✅ EXISTS' : '❌ NOT FOUND');
+  console.log('ethers:', typeof ethers !== 'undefined' ? '✅ LOADED' : '❌ NOT LOADED');
+  console.log('currentChain:', currentChain);
+  console.log('walletAddress:', walletAddress || 'Not connected');
+  console.log('provider:', provider ? '✅ EXISTS' : '❌ NOT FOUND');
+  
+  if (window.ethereum) {
+    console.log('Wallet Provider:', window.ethereum.isMetaMask ? 'MetaMask' : window.ethereum.isRabby ? 'Rabby' : 'Unknown');
+    console.log('Chain ID:', window.ethereum.chainId);
+  }
+  
+  showToast('🐛 Debug info logged to console (F12)');
 }
 
 // ============ WALLET ============
@@ -597,10 +617,16 @@ async function loadContractData() {
     document.getElementById('pNfts').textContent = stats.nfts.toString();
     
     // Get NFT supply
-    const supply = await contract.getNFTSupply();
-    const remaining = 9999 - supply.toNumber();
-    document.getElementById('nftSupplyGlobal').textContent = remaining;
-    document.getElementById('nftAvailable').textContent = remaining;
+    try {
+      const supply = await contract.getNFTSupply();
+      console.log('NFT Supply:', supply.toString());
+      const remaining = 9999 - supply.toNumber();
+      document.getElementById('nftSupplyGlobal').textContent = remaining;
+      document.getElementById('nftAvailable').textContent = remaining;
+    } catch (supplyError) {
+      console.error('NFT Supply Error:', supplyError);
+      document.getElementById('nftAvailable').textContent = '?';
+    }
     
     // Get TX log
     const txLog = await contract.getRecentTxLog(20);
