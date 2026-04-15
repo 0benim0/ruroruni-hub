@@ -109,7 +109,6 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
     <select id="chainSelect" onchange="switchChain()" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;">
       <option value="robinhood">🔴 Robinhood</option>
       <option value="arc">🟠 ARC</option>
-      <option value="tempo">🟡 Tempo</option>
     </select>
     <div class="wallet-status" id="walletStatus" onclick="toggleWallet()">
       <span id="walletText">🔌 Connect</span>
@@ -344,13 +343,6 @@ const CHAINS = {
     chainIdDec: 5042002,
     rpc: 'wss://arc-testnet.drpc.org',
     contractAddress: '0x50718E9194595540fF7Ef81EC31AaC15a7Ae4ac8'
-  },
-  tempo: {
-    name: 'Tempo Testnet',
-    chainId: '0x5bf',
-    chainIdDec: 42431,
-    rpc: 'wss://rpc.moderato.tempo.xyz',
-    contractAddress: '0xF0031527F2ABBaEDbebF4BC56CF0E34c0a937594'
   }
 };
 
@@ -415,7 +407,7 @@ async function validateTestnet() {
     const chainId = window.ethereum.chainId;
     const chainIdDec = parseInt(chainId, 16);
 
-    const testnets = [46630, 5042002, 42431];
+    const testnets = [46630, 5042002];
     if (!testnets.includes(chainIdDec)) {
       showTestnetWarning('⚠️ WRONG NETWORK! Switching to Robinhood Testnet...');
       await switchToTestnet('robinhood');
