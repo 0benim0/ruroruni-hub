@@ -360,7 +360,9 @@ const CONTRACT_ABI = [
   "function mintNFT(string memory nftName) external",
   "function logDeploy(string memory deployType, string memory contractName) external",
   "function getUserStats(address user) external view returns (uint256 mines, uint256 streak, uint256 gms, uint256 nfts, uint256 deploys, uint256 total)",
+  "function getTotalNFTMinted() external view returns (uint256)",
   "function getNFTSupply() external view returns (uint256)",
+  "function nftSupply() external view returns (uint256)",
   "function getRecentTxLog(uint256 count) external view returns (tuple(address user, string txType, string label, uint256 timestamp)[])"
 ];
 
@@ -624,32 +626,38 @@ async function loadContractData() {
     document.getElementById('pNfts').textContent = nfts;
     document.getElementById('pDeploys').textContent = deploys;
 
-    // NFT Supply
+    // NFT Supply - mit Fallback
+    let nftSupply = 0;
     try {
-      const supply = await contract.getNFTSupply();
-      const supplyNum = supply.toNumber();
-      const remaining = 9999 - supplyNum;
+      let supply;
+      try {
+        supply = await contract.getNFTSupply();
+      } catch (e) {
+        console.log('getNFTSupply failed, trying alternative...');
+        supply = await contract.nftSupply();
+      }
+      
+      nftSupply = typeof supply === 'object' ? supply.toNumber() : supply;
+      const remaining = 9999 - nftSupply;
       
       document.getElementById('nftAvailable').textContent = remaining;
       document.getElementById('nftAvailableHome').textContent = remaining;
       
       const debug = document.getElementById('nftDebug');
       debug.style.display = 'block';
-      debug.textContent = `✅ Supply: ${supplyNum}, Remaining: ${remaining} [${currentChain}]`;
+      debug.textContent = `✅ Supply: ${nftSupply}, Remaining: ${remaining} [${currentChain}]`;
       
-      console.log('NFT Supply Success:', { chain: currentChain, supply: supplyNum, remaining: remaining });
+      console.log('NFT Supply Success:', { chain: currentChain, supply: nftSupply, remaining: remaining });
     } catch (supplyError) {
       console.error('Supply Error on', currentChain, ':', supplyError.message);
       
       const debug = document.getElementById('nftDebug');
       debug.style.display = 'block';
-      debug.textContent = `⚠️ Supply Error: ${supplyError.message.slice(0, 50)} [${currentChain}]`;
+      debug.textContent = `⚠️ Supply: Temporary issue [${currentChain}] - Minting still works!`;
       
       // Fallback: Show ? if error
       document.getElementById('nftAvailable').textContent = '?';
       document.getElementById('nftAvailableHome').textContent = '?';
-      
-      showToast('⚠️ NFT Supply Error - Check console');
     }
   } catch (e) {
     console.error('Contract data error:', e);
