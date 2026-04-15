@@ -350,7 +350,7 @@ const CHAINS = {
     chainId: '0x5bf',
     chainIdDec: 42431,
     rpc: 'wss://rpc.moderato.tempo.xyz',
-    contractAddress: '0x4034195d2A198394b664c1d256805f0Dd20c2571'
+    contractAddress: '0xF0031527F2ABBaEDbebF4BC56CF0E34c0a937594'
   }
 };
 
@@ -633,20 +633,23 @@ async function loadContractData() {
       document.getElementById('nftAvailable').textContent = remaining;
       document.getElementById('nftAvailableHome').textContent = remaining;
       
-      // DEBUG: Show contract response
       const debug = document.getElementById('nftDebug');
       debug.style.display = 'block';
-      debug.textContent = `Contract Supply: ${supplyNum}, Remaining: ${remaining} [${currentChain}]`;
+      debug.textContent = `✅ Supply: ${supplyNum}, Remaining: ${remaining} [${currentChain}]`;
       
-      console.log('NFT Supply Debug:', {
-        chain: currentChain,
-        supply: supplyNum,
-        remaining: remaining
-      });
-    } catch (e) {
-      console.error('Supply error:', e);
+      console.log('NFT Supply Success:', { chain: currentChain, supply: supplyNum, remaining: remaining });
+    } catch (supplyError) {
+      console.error('Supply Error on', currentChain, ':', supplyError.message);
+      
+      const debug = document.getElementById('nftDebug');
+      debug.style.display = 'block';
+      debug.textContent = `⚠️ Supply Error: ${supplyError.message.slice(0, 50)} [${currentChain}]`;
+      
+      // Fallback: Show ? if error
       document.getElementById('nftAvailable').textContent = '?';
       document.getElementById('nftAvailableHome').textContent = '?';
+      
+      showToast('⚠️ NFT Supply Error - Check console');
     }
   } catch (e) {
     console.error('Contract data error:', e);
