@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>RurouniYu Hub</title>
+<title>RurouniYu Hub - Testnet Only</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.1/ethers.umd.min.js"></script>
 <style>
@@ -11,148 +11,202 @@
   --bg:#0a0a0f;--surface:#111118;--surface2:#18181f;
   --accent:#7c6fff;--accent2:#4fffb0;--accent3:#ff6b6b;
   --text:#f0eeff;--muted:#888899;--border:rgba(255,255,255,0.08);
+  --light-blue:#00d9ff;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;line-height:1.6;}
-header{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);height:70px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;}
+
+/* TESTNET WARNING BANNER */
+.testnet-warning{position:fixed;top:0;left:0;right:0;z-index:200;background:linear-gradient(90deg,#ff1744,#d32f2f);padding:12px;text-align:center;font-weight:700;color:#fff;font-size:13px;text-transform:uppercase;letter-spacing:1px;}
+
+.testnet-warning.hidden{display:none;}
+
+header{position:fixed;top:50px;left:0;right:0;z-index:100;background:rgba(10,10,15,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);height:70px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;}
 .logo{font-weight:800;font-size:20px;font-family:'Syne',sans-serif;letter-spacing:-1px;}
 .logo span{color:var(--accent);}
 .header-right{display:flex;gap:15px;align-items:center;}
 .chain-btn{padding:6px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
-.chain-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
+.chain-btn.active{background:var(--light-blue);color:#000;border-color:var(--light-blue);}
 .wallet-status{font-size:12px;background:var(--surface);padding:8px 14px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all 0.2s;}
-.wallet-status:hover{border-color:var(--accent);}
+.wallet-status:hover{border-color:var(--light-blue);}
 .wallet-status.connected{border-color:var(--accent2);}
-nav{position:fixed;top:70px;left:0;right:0;z-index:99;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:0;}
-.nav-btn{flex:1;padding:16px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:13px;font-weight:600;border-bottom:3px solid transparent;transition:all 0.2s;}
-.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
-.nav-btn:hover{color:var(--text);}
-main{margin-top:150px;padding:30px;max-width:1000px;margin-left:auto;margin-right:auto;}
+
+nav{position:fixed;top:120px;left:0;right:0;z-index:99;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:0;}
+.nav-btn{flex:1;padding:16px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:13px;font-weight:600;border-bottom:3px solid transparent;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.5px;}
+.nav-btn.active{color:var(--light-blue);border-bottom-color:var(--light-blue);}
+.nav-btn:hover{color:var(--light-blue);}
+
+main{margin-top:200px;padding:30px;max-width:1000px;margin-left:auto;margin-right:auto;}
 .page{display:none;}
 .page.active{display:block;}
+
 h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10px;letter-spacing:-1px;}
 .subtitle{color:var(--muted);font-size:14px;margin-bottom:30px;}
+
 .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px;}
 .card h2{font-size:18px;font-weight:700;margin-bottom:15px;}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-bottom:20px;}
-.stat{background:var(--surface2);padding:16px;border-radius:10px;border:1px solid var(--border);}
-.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
-.stat-value{font-size:28px;font-weight:800;font-family:'Syne',sans-serif;}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:15px;margin-bottom:20px;}
+.stat{background:var(--surface2);padding:20px;border-radius:12px;border:1px solid var(--border);text-align:center;transition:all 0.3s;cursor:pointer;}
+.stat:hover{border-color:var(--light-blue);transform:translateY(-2px);}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.stat-value{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;color:var(--light-blue);}
+
 .btn{display:inline-block;padding:12px 24px;background:var(--accent);color:#000;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.5px;}
 .btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(124,111,255,0.3);}
 .btn:disabled{opacity:0.5;cursor:not-allowed;}
 .btn-secondary{background:transparent;border:1px solid var(--border);color:var(--text);}
-.btn-secondary:hover{border-color:var(--accent);}
+.btn-secondary:hover{border-color:var(--light-blue);}
+
 .alert{padding:14px;border-radius:10px;font-size:13px;margin-bottom:15px;border-left:4px solid;}
+.alert-error{background:rgba(255,23,68,0.15);border-left-color:#ff1744;color:#ff1744;}
 .alert-success{background:rgba(79,255,176,0.1);border-left-color:var(--accent2);color:var(--accent2);}
-.alert-info{background:rgba(124,111,255,0.1);border-left-color:var(--accent);color:var(--accent);}
-.alert-warning{background:rgba(255,200,79,0.1);border-left-color:#ffc84f;color:#ffc84f;}
-.alert-error{background:rgba(255,107,107,0.1);border-left-color:var(--accent3);color:var(--accent3);}
+.alert-info{background:rgba(0,217,255,0.1);border-left-color:var(--light-blue);color:var(--light-blue);}
+
 .tx-list{font-size:12px;}
 .tx-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
 .tx-item:last-child{border-bottom:none;}
 .tx-label{color:var(--muted);}
-.tx-hash{font-family:'Space Mono',monospace;color:var(--accent);font-size:11px;}
-.streak-big{text-align:center;padding:30px 0;}
-.streak-number{font-size:80px;font-weight:800;font-family:'Syne',sans-serif;color:var(--accent2);line-height:1;}
-.streak-label{color:var(--muted);font-size:13px;margin-top:10px;}
-.nft-image{width:200px;height:200px;border-radius:12px;margin:0 auto 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:100px;border:2px solid var(--border);}
+
 .nft-showcase{width:100%;max-width:300px;margin:0 auto 20px;}
-.nft-svg{width:100%;height:auto;filter:drop-shadow(0 8px 24px rgba(0,217,255,0.3));}
+.nft-showcase img{width:100%;height:auto;border-radius:12px;border:3px solid var(--light-blue);box-shadow:0 0 30px rgba(0,217,255,0.4);}
+
+.global-stat{background:var(--light-blue);color:#000;padding:16px;border-radius:10px;margin-bottom:15px;font-weight:700;text-align:center;font-size:16px;}
+
+.mines-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:20px;}
+.mine{aspect-ratio:1;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.mine:hover{border-color:var(--light-blue);background:rgba(0,217,255,0.15);}
+.mine.revealed{background:rgba(79,255,176,0.1);border-color:rgba(79,255,176,0.4);}
+
 .toast{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-size:12px;z-index:1000;display:none;max-width:300px;}
 .toast.show{display:block;animation:slideIn 0.3s ease;}
 @keyframes slideIn{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
-.global-stat{background:var(--accent);color:#000;padding:14px;border-radius:10px;margin-bottom:15px;font-weight:700;text-align:center;}
-.mines-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:20px;}
-.mine{aspect-ratio:1;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
-.mine:hover{border-color:var(--accent);background:rgba(124,111,255,0.15);}
-.mine.revealed{background:rgba(79,255,176,0.1);border-color:rgba(79,255,176,0.4);}
+
+/* ANIMATIONS */
+@keyframes float{0%,100%{transform:translateY(0px)}50%{transform:translateY(-10px)}}
+.float-animation{animation:float 3s ease-in-out infinite;}
+
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
+
 @media(max-width:600px){
+  .testnet-warning{font-size:11px;}
   header{padding:0 20px;}
-  main{margin-top:150px;padding:20px;}
+  main{margin-top:180px;padding:20px;}
   .header-right{flex-wrap:wrap;}
   nav{flex-wrap:wrap;}
-  .nav-btn{flex:1;min-width:100px;}
+  .nav-btn{flex:1;min-width:80px;}
   h1{font-size:24px;}
+  .stats{grid-template-columns:repeat(2,1fr);}
 }
 </style>
 </head>
 <body>
 
+<!-- TESTNET WARNING BANNER -->
+<div class="testnet-warning" id="testnetBanner">
+  ⚠️ TESTNET ONLY - Kein echtes Geld! Nur Testnet verwenden! ⚠️
+</div>
+
 <header>
   <div class="logo">Rurou<span>niYu</span> Hub</div>
   <div class="header-right">
     <select id="chainSelect" onchange="switchChain()" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;">
-      <option value="robinhood">Robinhood</option>
-      <option value="arc">ARC</option>
-      <option value="tempo">Tempo</option>
+      <option value="robinhood">Robinhood Testnet</option>
+      <option value="arc">ARC Testnet</option>
+      <option value="tempo">Tempo Testnet</option>
     </select>
     <div class="wallet-status" id="walletStatus" onclick="toggleWallet()">
       <span id="walletText">🔌 Connect</span>
     </div>
-    <button onclick="debugWallet()" style="padding:8px 12px;background:#ff6b6b;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:11px;font-weight:600;">🐛 Debug</button>
   </div>
 </header>
 
 <nav>
-  <button class="nav-btn active" onclick="showPage('home')">Home</button>
-  <button class="nav-btn" onclick="showPage('gm')">GM</button>
-  <button class="nav-btn" onclick="showPage('mines')">Mines</button>
-  <button class="nav-btn" onclick="showPage('nft')">NFT</button>
-  <button class="nav-btn" onclick="showPage('profile')">Profile</button>
+  <button class="nav-btn active" onclick="showPage('home')">🏠 Home</button>
+  <button class="nav-btn" onclick="showPage('gm')">👋 GM</button>
+  <button class="nav-btn" onclick="showPage('mines')">⛏️ Mines</button>
+  <button class="nav-btn" onclick="showPage('nft')">🎨 NFT</button>
+  <button class="nav-btn" onclick="showPage('profile')">👤 Profile</button>
 </nav>
 
 <main>
 
-<!-- HOME -->
+<!-- HOME PAGE -->
 <div class="page active" id="home">
-  <h1>Welcome to <span style="color:var(--accent);">RurouniYu Hub</span></h1>
-  <p class="subtitle">Blockchain interaction on Robinhood, ARC & Tempo Testnets</p>
+  <h1>Welcome to RurouniYu Hub 🚀</h1>
+  <p class="subtitle">Blockchain Testnet Interaction - Robinhood, ARC & Tempo</p>
   
   <div class="card">
-    <h2>🌍 Global Stats</h2>
-    <div class="global-stat">
-      NFTs Available: <span id="nftSupplyGlobal">9999</span> / 9999
+    <div style="text-align:center;padding:40px 0;">
+      <div style="font-size:64px;margin-bottom:20px;" class="float-animation">🎮</div>
+      <h2 style="font-size:24px;margin-bottom:10px;">Your Dashboard</h2>
+      <p style="color:var(--muted);margin-bottom:30px;">Track your blockchain activity across testnets</p>
     </div>
-  </div>
-
-  <div class="card">
-    <h2>📊 Your Dashboard</h2>
+    
     <div class="stats">
       <div class="stat">
         <div class="stat-label">Total TX</div>
         <div class="stat-value" id="homeTotal">0</div>
       </div>
       <div class="stat">
-        <div class="stat-label">GM Streak</div>
+        <div class="stat-label">GM Streak 🔥</div>
         <div class="stat-value" id="homeStreak">0</div>
       </div>
       <div class="stat">
-        <div class="stat-label">Mines</div>
+        <div class="stat-label">Mines ⛏️</div>
         <div class="stat-value" id="homeMines">0</div>
       </div>
       <div class="stat">
-        <div class="stat-label">NFTs</div>
+        <div class="stat-label">NFTs 🎨</div>
         <div class="stat-value" id="homeNFTs">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🌍 Global NFT Status</h2>
+    <div class="global-stat">
+      Available: <span id="nftAvailableHome">9999</span> / 9999
+      <button onclick="loadContractData()" style="margin-left:10px;padding:6px 12px;background:#000;border:none;border-radius:4px;color:var(--light-blue);cursor:pointer;font-weight:600;font-size:11px;">🔄</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📋 Quick Start</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;">
+      <div style="padding:20px;background:var(--surface2);border-radius:10px;text-align:center;cursor:pointer;transition:all 0.2s;" onclick="showPage('gm')" class="stat">
+        <div style="font-size:32px;margin-bottom:10px;">👋</div>
+        <div style="font-weight:600;">Daily GM</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:5px;">Check in daily</div>
+      </div>
+      <div style="padding:20px;background:var(--surface2);border-radius:10px;text-align:center;cursor:pointer;transition:all 0.2s;" onclick="showPage('mines')" class="stat">
+        <div style="font-size:32px;margin-bottom:10px;">⛏️</div>
+        <div style="font-weight:600;">Play Mines</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:5px;">5x5 Grid Game</div>
+      </div>
+      <div style="padding:20px;background:var(--surface2);border-radius:10px;text-align:center;cursor:pointer;transition:all 0.2s;" onclick="showPage('nft')" class="stat">
+        <div style="font-size:32px;margin-bottom:10px;">🎨</div>
+        <div style="font-weight:600;">Mint NFT</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:5px;">Checkmate NFT</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- GM CHECK-IN -->
+<!-- GM PAGE -->
 <div class="page" id="gm">
-  <h1>Daily GM Check-In ☀️</h1>
-  <p class="subtitle">Check in daily to build your streak</p>
+  <h1>Daily GM Check-In 👋</h1>
+  <p class="subtitle">Build your streak!</p>
   
   <div class="card">
-    <div class="streak-big">
-      <div class="streak-number" id="gmStreak">0</div>
-      <div class="streak-label">Days Active</div>
+    <div style="text-align:center;padding:40px 20px;">
+      <div style="font-size:96px;margin-bottom:20px;" class="float-animation">🔥</div>
+      <div style="font-size:64px;font-weight:800;color:var(--light-blue);margin-bottom:10px;" id="gmStreakBig">0</div>
+      <div style="color:var(--muted);font-size:16px;margin-bottom:30px;">Current Streak</div>
+      <button class="btn" id="gmBtn" onclick="gmCheckIn()" style="width:100%;padding:20px;">✨ Say GM Today!</button>
+      <div id="gmAlert" style="margin-top:20px;"></div>
     </div>
-    <div id="gmAlert"></div>
-    <button class="btn" id="gmBtn" onclick="sendGM()" style="width:100%;">Send GM ☀️</button>
   </div>
 
   <div class="card">
@@ -161,6 +215,10 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
       <div class="stat">
         <div class="stat-label">Total GMs</div>
         <div class="stat-value" id="gmCount">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Current Streak</div>
+        <div class="stat-value" id="gmStreak">0</div>
       </div>
     </div>
   </div>
@@ -171,46 +229,46 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
   </div>
 </div>
 
-<!-- MINES -->
+<!-- MINES PAGE -->
 <div class="page" id="mines">
-  <h1>Mines Game 💣</h1>
-  <p class="subtitle">Click cells - each click = 1 real transaction</p>
+  <h1>Mines Game ⛏️</h1>
+  <p class="subtitle">5x5 Grid - Each click logs a transaction</p>
   
   <div class="card">
-    <div class="alert alert-warning">⚠️ Each click costs gas! Make sure you have testnet ETH.</div>
     <div class="mines-grid" id="minesGrid"></div>
-    <button class="btn btn-secondary" onclick="resetMines()" style="width:100%;">↺ New Game</button>
-    
-    <div style="margin-top:20px;">
-      <div class="stat" style="display:inline-block;margin-right:10px;">
-        <div class="stat-label">Revealed</div>
-        <div class="stat-value" style="font-size:24px;" id="minesRevealed">0</div>
-      </div>
+    <button class="btn" id="resetBtn" onclick="resetMines()" style="width:100%;margin-bottom:15px;">🔄 Reset Grid</button>
+    <div id="mineAlert"></div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Stats</h2>
+    <div class="stat">
+      <div class="stat-label">Mines Revealed</div>
+      <div class="stat-value" id="mineCount">0</div>
     </div>
   </div>
 
   <div class="card">
     <h2>📝 Transactions</h2>
-    <div id="minesTxLog" class="tx-list">Connect wallet to see transactions</div>
+    <div id="mineTxLog" class="tx-list">Connect wallet to see transactions</div>
   </div>
 </div>
 
-<!-- NFT -->
+<!-- NFT PAGE -->
 <div class="page" id="nft">
-  <h1>NFT Mint - Checkmate 🖼️</h1>
+  <h1>NFT Mint - Checkmate 🎨</h1>
   <p class="subtitle">Mint your exclusive Checkmate NFT (Max 9999)</p>
   
   <div class="card">
     <div class="nft-showcase">
-      <img src="checkmate-nft.jpg" alt="Checkmate NFT" style="width:100%;height:auto;border-radius:12px;border:3px solid #00d9ff;box-shadow:0 0 30px rgba(0,217,255,0.6);" onerror="this.style.display='none';document.getElementById('nftFallback').style.display='block';">
-      <div id="nftFallback" style="display:none;width:100%;aspect-ratio:1;background:linear-gradient(135deg,#4f46e5,#0f172a);border-radius:12px;border:3px solid #00d9ff;display:flex;align-items:center;justify-content:center;color:#00d9ff;font-size:48px;">🖼️</div>
+      <img src="checkmate-nft.jpg" alt="Checkmate NFT" onerror="this.style.display='none';document.getElementById('nftFallback').style.display='flex';">
+      <div id="nftFallback" style="display:none;width:100%;aspect-ratio:1;background:linear-gradient(135deg,#4f46e5,#0f172a);border-radius:12px;border:3px solid var(--light-blue);align-items:center;justify-content:center;color:var(--light-blue);font-size:48px;">🖼️</div>
     </div>
-    
     <div class="global-stat">
       Available: <span id="nftAvailable">9999</span> / 9999
-      <button onclick="loadContractData()" style="margin-left:10px;padding:4px 8px;background:#00d9ff;border:none;border-radius:4px;color:#000;cursor:pointer;font-weight:600;font-size:11px;">🔄 Refresh</button>
+      <button onclick="loadContractData()" style="margin-left:10px;padding:6px 12px;background:#000;border:none;border-radius:4px;color:#000;cursor:pointer;font-weight:600;font-size:11px;">🔄</button>
     </div>
-    <button class="btn" id="nftBtn" onclick="mintNFT()" style="width:100%;margin-bottom:15px;">Mint Checkmate NFT</button>
+    <button class="btn" id="nftBtn" onclick="mintNFT()" style="width:100%;margin-bottom:15px;">🎨 Mint Checkmate NFT</button>
     <div id="nftAlert"></div>
   </div>
 
@@ -228,13 +286,13 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
   </div>
 </div>
 
-<!-- PROFILE -->
+<!-- PROFILE PAGE -->
 <div class="page" id="profile">
   <h1>Your Profile 👤</h1>
-  <p class="subtitle" id="profileAddr">Connect wallet to see profile</p>
+  <p class="subtitle" id="profileAddress"></p>
   
   <div class="card">
-    <h2>📊 Statistics</h2>
+    <h2>📊 All Stats</h2>
     <div class="stats">
       <div class="stat">
         <div class="stat-label">Total TX</div>
@@ -245,23 +303,23 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
         <div class="stat-value" id="pStreak">0</div>
       </div>
       <div class="stat">
-        <div class="stat-label">GMs Sent</div>
+        <div class="stat-label">GMs</div>
         <div class="stat-value" id="pGms">0</div>
       </div>
       <div class="stat">
-        <div class="stat-label">Mines Revealed</div>
+        <div class="stat-label">Mines</div>
         <div class="stat-value" id="pMines">0</div>
       </div>
       <div class="stat">
-        <div class="stat-label">NFTs Minted</div>
+        <div class="stat-label">NFTs</div>
         <div class="stat-value" id="pNfts">0</div>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <h2>📋 Your Transactions</h2>
-    <div id="profileTxLog" class="tx-list">No transactions yet</div>
+    <h2>📝 Your Transactions</h2>
+    <div id="profileTxLog" class="tx-list">Connect wallet to see transactions</div>
   </div>
 </div>
 
@@ -270,7 +328,7 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
 <div class="toast" id="toast"></div>
 
 <script>
-// ============ CONTRACT CONFIGURATION ============
+// ============ CONFIG ============
 const CHAINS = {
   robinhood: {
     name: 'Robinhood Testnet',
@@ -296,91 +354,90 @@ const CHAINS = {
 };
 
 const CONTRACT_ABI = [
-  {"inputs":[],"name":"gmCheckIn","outputs":[],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[{"internalType":"uint256","name":"mineIndex","type":"uint256"}],"name":"revealMine","outputs":[],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[{"internalType":"string","name":"nftName","type":"string"}],"name":"mintNFT","outputs":[],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[{"internalType":"string","name":"contractType","type":"string"},{"internalType":"string","name":"contractName","type":"string"}],"name":"logDeploy","outputs":[],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUserStats","outputs":[{"internalType":"uint256","name":"mines","type":"uint256"},{"internalType":"uint256","name":"streak","type":"uint256"},{"internalType":"uint256","name":"gms","type":"uint256"},{"internalType":"uint256","name":"nfts","type":"uint256"},{"internalType":"uint256","name":"deploys","type":"uint256"},{"internalType":"uint256","name":"total","type":"uint256"}],"stateMutability":"view","type":"function"},
-  {"inputs":[],"name":"getNFTSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-  {"inputs":[],"name":"getNFTRemaining","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-  {"inputs":[{"internalType":"uint256","name":"count","type":"uint256"}],"name":"getRecentTxLog","outputs":[{"components":[{"internalType":"address","name":"user","type":"address"},{"internalType":"string","name":"txType","type":"string"},{"internalType":"string","name":"label","type":"string"},{"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"","type":"tuple[]"}],"stateMutability":"view","type":"function"}
+  "function gmCheckIn() external",
+  "function revealMine(uint256 mineIndex) external",
+  "function mintNFT(string memory nftName) external",
+  "function getUserStats(address user) external view returns (uint256 mines, uint256 streak, uint256 gms, uint256 nfts, uint256 deploys, uint256 total)",
+  "function getNFTSupply() external view returns (uint256)",
+  "function getNFTRemaining() external view returns (uint256)",
+  "function getRecentTxLog(uint256 count) external view returns (tuple(address user, string txType, string label, uint256 timestamp)[])"
 ];
 
-// ============ STATE ============
 let currentChain = 'robinhood';
-let walletAddress = null;
-let signer = null;
 let provider = null;
+let signer = null;
 let contract = null;
-let minesGrid = [];
+let walletAddress = null;
 
-// ============ STORAGE ============
-function getStorageKey(key) {
-  if (!walletAddress) return null;
-  return `${walletAddress}_${key}`;
-}
+// ============ INIT ============
+window.addEventListener('load', () => {
+  validateTestnet();
+  initChainListeners();
+});
 
-function saveLocalData(key, value) {
-  const k = getStorageKey(key);
-  if (k) localStorage.setItem(k, JSON.stringify(value));
-}
-
-function loadLocalData(key, defaultValue) {
-  const k = getStorageKey(key);
-  if (!k) return defaultValue;
-  const val = localStorage.getItem(k);
-  return val ? JSON.parse(val) : defaultValue;
-}
-
-// ============ UI ============
-function showPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(page).classList.add('active');
-  
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  
-  if (page === 'home') updateHome();
-  if (page === 'profile') updateProfile();
-  if (page === 'gm') updateGM();
-  if (page === 'mines') buildMinesUI();
-  if (page === 'nft') updateNFTUI();
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-// ============ CHAIN ============
-async function switchChain() {
-  const newChain = document.getElementById('chainSelect').value;
-  currentChain = newChain;
-  walletAddress = null;
-  signer = null;
-  provider = null;
-  contract = null;
-  updateUI();
-}
-
-// ============ DEBUG ============
-function debugWallet() {
-  console.clear();
-  console.log('=== WALLET DEBUG INFO ===');
-  console.log('window.ethereum:', window.ethereum ? '✅ EXISTS' : '❌ NOT FOUND');
-  console.log('ethers:', typeof ethers !== 'undefined' ? '✅ LOADED' : '❌ NOT LOADED');
-  console.log('currentChain:', currentChain);
-  console.log('walletAddress:', walletAddress || 'Not connected');
-  console.log('provider:', provider ? '✅ EXISTS' : '❌ NOT FOUND');
-  
-  if (window.ethereum) {
-    console.log('Wallet Provider:', window.ethereum.isMetaMask ? 'MetaMask' : window.ethereum.isRabby ? 'Rabby' : 'Unknown');
-    console.log('Chain ID:', window.ethereum.chainId);
+// ============ TESTNET VALIDATION & AUTO-SWITCH ============
+async function validateTestnet() {
+  if (!window.ethereum) {
+    showTestnetWarning('MetaMask/Rabby not found');
+    return;
   }
-  
-  showToast('🐛 Debug info logged to console (F12)');
+
+  try {
+    const chainId = window.ethereum.chainId;
+    const chainIdDec = parseInt(chainId, 16);
+    console.log('Current Chain ID:', chainIdDec);
+
+    // Prüfe ob auf richtigem Testnet
+    const testnets = [46630, 5042002, 42431];
+    if (!testnets.includes(chainIdDec)) {
+      showTestnetWarning('⚠️ WRONG NETWORK! Switching to Robinhood Testnet...');
+      await switchToTestnet('robinhood');
+    } else {
+      hideTestnetWarning();
+    }
+  } catch (e) {
+    console.error('Chain validation error:', e);
+  }
+}
+
+async function switchToTestnet(chainKey) {
+  try {
+    const chain = CHAINS[chainKey];
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: chain.chainId }]
+    });
+    currentChain = chainKey;
+    document.getElementById('chainSelect').value = chainKey;
+    hideTestnetWarning();
+  } catch (e) {
+    if (e.code === 4902) {
+      console.log('Chain not added, adding...');
+      // Add chain if not exists (für manche Wallets)
+    }
+    showTestnetWarning('⚠️ TESTNET ONLY!');
+  }
+}
+
+function showTestnetWarning(msg) {
+  const banner = document.getElementById('testnetBanner');
+  banner.classList.remove('hidden');
+  banner.textContent = msg || '⚠️ TESTNET ONLY - Kein echtes Geld!';
+}
+
+function hideTestnetWarning() {
+  document.getElementById('testnetBanner').classList.add('hidden');
+}
+
+function initChainListeners() {
+  if (window.ethereum) {
+    window.ethereum.on('chainChanged', () => {
+      validateTestnet();
+    });
+    window.ethereum.on('accountsChanged', () => {
+      location.reload();
+    });
+  }
 }
 
 // ============ WALLET ============
@@ -398,258 +455,227 @@ async function toggleWallet() {
 
 async function connectWallet() {
   try {
-    // Check if wallet exists
     if (!window.ethereum) {
-      showToast('❌ MetaMask/Rabby not installed. Install first!');
-      console.error('window.ethereum not found');
+      showToast('❌ MetaMask/Rabby not installed');
       return;
     }
-    
+
     const chain = CHAINS[currentChain];
     provider = new ethers.BrowserProvider(window.ethereum);
-    
-    console.log('Requesting accounts...');
+
     const accounts = await window.ethereum.request({
       method: 'eth_requestAccounts'
     });
-    
+
     if (!accounts || accounts.length === 0) {
-      showToast('❌ No accounts found. Unlock your wallet!');
+      showToast('❌ No accounts found');
       return;
     }
-    
+
     walletAddress = accounts[0];
-    console.log('Connected account:', walletAddress);
-    
     signer = await provider.getSigner();
     contract = new ethers.Contract(chain.contractAddress, CONTRACT_ABI, signer);
-    
+
     updateUI();
-    showToast('✅ Wallet connected: ' + walletAddress.slice(0, 6) + '...');
+    showToast('✅ Connected: ' + walletAddress.slice(0, 6) + '...');
     loadContractData();
   } catch (e) {
-    console.error('Wallet connection error:', e);
+    console.error('Wallet error:', e);
     showToast('❌ ' + (e.message || 'Connection failed'));
   }
 }
 
-function updateUI() {
-  const status = document.getElementById('walletStatus');
-  const text = document.getElementById('walletText');
-  
+// ============ CHAIN SWITCH ============
+async function switchChain() {
+  const selected = document.getElementById('chainSelect').value;
+  await switchToTestnet(selected);
   if (walletAddress) {
-    status.classList.add('connected');
-    text.textContent = '✅ ' + walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
+    loadContractData();
+  }
+}
+
+// ============ UI ============
+function showPage(pageName) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageName).classList.add('active');
+  
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+
+  if (pageName === 'profile' && walletAddress) {
+    document.getElementById('profileAddress').textContent = walletAddress;
+  }
+}
+
+function updateUI() {
+  const btn = document.getElementById('walletStatus');
+  if (walletAddress) {
+    btn.textContent = '✅ ' + walletAddress.slice(0, 6) + '...';
+    btn.classList.add('connected');
   } else {
-    status.classList.remove('connected');
-    text.textContent = '🔌 Connect';
-  }
-  
-  loadContractData();
-}
-
-// ============ HOME ============
-function updateHome() {
-  loadContractData();
-}
-
-// ============ GM CHECK-IN ============
-function updateGM() {
-  if (!walletAddress) {
-    document.getElementById('gmAlert').innerHTML = '<div class="alert alert-warning">Connect wallet to check in</div>';
-    return;
-  }
-  
-  loadContractData();
-}
-
-async function sendGM() {
-  if (!contract) {
-    showToast('Connect wallet first');
-    return;
-  }
-  
-  try {
-    const btn = document.getElementById('gmBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>';
-    
-    const tx = await contract.gmCheckIn();
-    showToast('TX sent, waiting...');
-    
-    await tx.wait();
-    showToast('GM sent! ✓');
-    
-    btn.disabled = false;
-    btn.textContent = 'Send GM ☀️';
-    
-    loadContractData();
-  } catch (e) {
-    showToast('Error: ' + e.message.slice(0, 50));
-    document.getElementById('gmBtn').disabled = false;
-    document.getElementById('gmBtn').textContent = 'Send GM ☀️';
+    btn.textContent = '🔌 Connect';
+    btn.classList.remove('connected');
   }
 }
 
-// ============ MINES ============
-function resetMinesGrid() {
-  minesGrid = Array.from({length: 25}, () => ({
-    revealed: false,
-    isMine: Math.random() < 0.18
-  }));
-  saveLocalData('minesGrid', minesGrid);
-  buildMinesUI();
-}
-
-function buildMinesUI() {
-  if (!walletAddress) {
-    document.getElementById('minesGrid').innerHTML = '<p style="color:var(--muted);grid-column:1/-1;text-align:center;">Connect wallet to play</p>';
-    return;
-  }
-  
-  minesGrid = loadLocalData('minesGrid', []);
-  if (minesGrid.length === 0) resetMinesGrid();
-  
-  const grid = document.getElementById('minesGrid');
-  grid.innerHTML = minesGrid.map((cell, i) => {
-    let cls = 'mine';
-    if (cell.revealed) cls += ' revealed';
-    const icon = cell.revealed ? (cell.isMine ? '💣' : '✓') : '';
-    return `<div class="${cls}" onclick="revealMine(${i})">${icon}</div>`;
-  }).join('');
-  
-  document.getElementById('minesRevealed').textContent = minesGrid.filter(c => c.revealed).length;
-}
-
-async function revealMine(i) {
-  if (!contract) {
-    showToast('Connect wallet first');
-    return;
-  }
-  
-  if (minesGrid[i].revealed) return;
-  
-  try {
-    const tx = await contract.revealMine(i);
-    minesGrid[i].revealed = true;
-    saveLocalData('minesGrid', minesGrid);
-    buildMinesUI();
-    
-    showToast(minesGrid[i].isMine ? '💣 Hit!' : '✓ Safe!');
-    
-    await tx.wait();
-    loadContractData();
-  } catch (e) {
-    showToast('Error: ' + e.message.slice(0, 50));
-  }
-}
-
-function resetMines() {
-  resetMinesGrid();
-  showToast('New game started!');
-}
-
-// ============ NFT ============
-function updateNFTUI() {
-  loadContractData();
-}
-
-async function mintNFT() {
-  if (!contract) {
-    showToast('Connect wallet first');
-    return;
-  }
-  
-  try {
-    const btn = document.getElementById('nftBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>';
-    
-    const tx = await contract.mintNFT('Checkmate #' + Math.floor(Math.random() * 10000));
-    showToast('Minting...');
-    
-    await tx.wait();
-    showToast('NFT Minted! ✓');
-    
-    btn.disabled = false;
-    btn.textContent = 'Mint Checkmate NFT';
-    
-    loadContractData();
-  } catch (e) {
-    showToast('Error: ' + e.message.slice(0, 50));
-    document.getElementById('nftBtn').disabled = false;
-    document.getElementById('nftBtn').textContent = 'Mint Checkmate NFT';
-  }
-}
-
-// ============ PROFILE ============
-function updateProfile() {
-  if (!walletAddress) {
-    document.getElementById('profileAddr').textContent = 'Connect wallet to see profile';
-    return;
-  }
-  
-  document.getElementById('profileAddr').textContent = walletAddress;
-  loadContractData();
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
 // ============ CONTRACT DATA ============
 async function loadContractData() {
   if (!contract || !walletAddress) return;
-  
+
   try {
-    // Get user stats
     const stats = await contract.getUserStats(walletAddress);
-    document.getElementById('homeTotal').textContent = stats.total.toString();
-    document.getElementById('homeStreak').textContent = stats.streak.toString();
-    document.getElementById('homeMines').textContent = stats.mines.toString();
-    document.getElementById('homeNFTs').textContent = stats.nfts.toString();
-    
-    document.getElementById('gmStreak').textContent = stats.streak.toString();
-    document.getElementById('gmCount').textContent = stats.gms.toString();
-    
-    document.getElementById('nftCount').textContent = stats.nfts.toString();
-    
-    document.getElementById('pTotal').textContent = stats.total.toString();
-    document.getElementById('pStreak').textContent = stats.streak.toString();
-    document.getElementById('pGms').textContent = stats.gms.toString();
-    document.getElementById('pMines').textContent = stats.mines.toString();
-    document.getElementById('pNfts').textContent = stats.nfts.toString();
-    
-    // Get NFT supply
+    const total = stats.total.toString();
+    const streak = stats.streak.toString();
+    const mines = stats.mines.toString();
+    const nfts = stats.nfts.toString();
+    const gms = stats.gms.toString();
+
+    // Home
+    document.getElementById('homeTotal').textContent = total;
+    document.getElementById('homeStreak').textContent = streak;
+    document.getElementById('homeMines').textContent = mines;
+    document.getElementById('homeNFTs').textContent = nfts;
+
+    // GM
+    document.getElementById('gmStreak').textContent = streak;
+    document.getElementById('gmStreakBig').textContent = streak;
+    document.getElementById('gmCount').textContent = gms;
+
+    // Mines
+    document.getElementById('mineCount').textContent = mines;
+
+    // NFT
+    document.getElementById('nftCount').textContent = nfts;
+
+    // Profile
+    document.getElementById('pTotal').textContent = total;
+    document.getElementById('pStreak').textContent = streak;
+    document.getElementById('pGms').textContent = gms;
+    document.getElementById('pMines').textContent = mines;
+    document.getElementById('pNfts').textContent = nfts;
+
+    // NFT Supply
     try {
       const supply = await contract.getNFTSupply();
-      console.log('NFT Supply:', supply.toString());
       const remaining = 9999 - supply.toNumber();
-      document.getElementById('nftSupplyGlobal').textContent = remaining;
       document.getElementById('nftAvailable').textContent = remaining;
-    } catch (supplyError) {
-      console.error('NFT Supply Error:', supplyError);
-      document.getElementById('nftAvailable').textContent = '?';
+      document.getElementById('nftAvailableHome').textContent = remaining;
+    } catch (e) {
+      console.error('Supply error:', e);
     }
-    
-    // Get TX log
-    const txLog = await contract.getRecentTxLog(20);
-    const userTxs = txLog.filter(t => t.user.toLowerCase() === walletAddress.toLowerCase());
-    
-    const txHtml = userTxs.length ? userTxs.map(tx => 
-      `<div class="tx-item"><span class="tx-label">${tx.label}</span><span class="tx-hash">${tx.user.slice(0,6)}...</span></div>`
-    ).join('') : 'No transactions yet';
-    
-    document.getElementById('gmTxLog').innerHTML = txHtml;
-    document.getElementById('minesTxLog').innerHTML = txHtml;
-    document.getElementById('nftTxLog').innerHTML = txHtml;
-    document.getElementById('profileTxLog').innerHTML = txHtml;
-    
   } catch (e) {
-    console.log('Contract error:', e.message);
+    console.error('Contract data error:', e);
   }
 }
 
-// ============ INIT ============
-window.addEventListener('load', () => {
-  console.log('App loaded. Deploy contract first and update CONTRACT addresses in CHAINS config!');
-});
+// ============ GM CHECK-IN ============
+async function gmCheckIn() {
+  if (!contract) {
+    showToast('Connect wallet first');
+    return;
+  }
+
+  try {
+    const btn = document.getElementById('gmBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+
+    const tx = await contract.gmCheckIn();
+    showToast('Checking in...');
+    await tx.wait();
+    showToast('✅ GM Checked In!');
+
+    btn.disabled = false;
+    btn.textContent = '✨ Say GM Today!';
+    loadContractData();
+  } catch (e) {
+    showToast('Error: ' + e.message.slice(0, 50));
+    document.getElementById('gmBtn').disabled = false;
+    document.getElementById('gmBtn').textContent = '✨ Say GM Today!';
+  }
+}
+
+// ============ MINES ============
+let mineGrid = [];
+
+function initMines() {
+  mineGrid = Array(25).fill(0);
+  renderMines();
+}
+
+function renderMines() {
+  const grid = document.getElementById('minesGrid');
+  grid.innerHTML = '';
+  mineGrid.forEach((revealed, i) => {
+    const div = document.createElement('div');
+    div.className = 'mine' + (revealed ? ' revealed' : '');
+    div.textContent = revealed ? '⛏️' : '';
+    div.onclick = () => revealMine(i);
+    grid.appendChild(div);
+  });
+}
+
+async function revealMine(index) {
+  if (!contract || mineGrid[index]) return;
+
+  try {
+    const btn = document.querySelectorAll('.mine')[index];
+    btn.disabled = true;
+
+    const tx = await contract.revealMine(index);
+    showToast('Revealing...');
+    await tx.wait();
+
+    mineGrid[index] = 1;
+    renderMines();
+    loadContractData();
+    showToast('⛏️ Mine revealed!');
+  } catch (e) {
+    showToast('Error: ' + e.message.slice(0, 40));
+  }
+}
+
+function resetMines() {
+  initMines();
+}
+
+// ============ NFT MINT ============
+async function mintNFT() {
+  if (!contract) {
+    showToast('Connect wallet first');
+    return;
+  }
+
+  try {
+    const btn = document.getElementById('nftBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+
+    const tx = await contract.mintNFT('Checkmate #' + Math.floor(Math.random() * 10000));
+    showToast('Minting...');
+    await tx.wait();
+    showToast('🎨 NFT Minted!');
+
+    btn.disabled = false;
+    btn.textContent = '🎨 Mint Checkmate NFT';
+    
+    setTimeout(() => loadContractData(), 2000);
+  } catch (e) {
+    showToast('Error: ' + e.message.slice(0, 50));
+    document.getElementById('nftBtn').disabled = false;
+    document.getElementById('nftBtn').textContent = '🎨 Mint Checkmate NFT';
+  }
+}
+
+// Init
+initMines();
 </script>
 
 </body>
