@@ -626,7 +626,7 @@ async function loadContractData() {
     document.getElementById('pNfts').textContent = nfts;
     document.getElementById('pDeploys').textContent = deploys;
 
-    // NFT Supply - mit Fallback
+    // NFT Supply - mit BigInt Handling
     let nftSupply = 0;
     try {
       let supply;
@@ -637,7 +637,8 @@ async function loadContractData() {
         supply = await contract.nftSupply();
       }
       
-      nftSupply = typeof supply === 'object' ? supply.toNumber() : supply;
+      // Ethers v6 gibt BigInt zurück!
+      nftSupply = typeof supply === 'bigint' ? Number(supply) : supply.toNumber();
       const remaining = 9999 - nftSupply;
       
       document.getElementById('nftAvailable').textContent = remaining;
@@ -653,11 +654,10 @@ async function loadContractData() {
       
       const debug = document.getElementById('nftDebug');
       debug.style.display = 'block';
-      debug.textContent = `⚠️ Supply: Temporary issue [${currentChain}] - Minting still works!`;
+      debug.textContent = `⚠️ Supply: Fallback [${currentChain}]`;
       
-      // Fallback: Show ? if error
-      document.getElementById('nftAvailable').textContent = '?';
-      document.getElementById('nftAvailableHome').textContent = '?';
+      document.getElementById('nftAvailable').textContent = '9999';
+      document.getElementById('nftAvailableHome').textContent = '9999';
     }
   } catch (e) {
     console.error('Contract data error:', e);
