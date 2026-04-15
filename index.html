@@ -437,9 +437,21 @@ async function switchToTestnet(chainKey) {
     currentChain = chainKey;
     document.getElementById('chainSelect').value = chainKey;
     hideTestnetWarning();
-    if (walletAddress) loadContractData();
-  } catch (e) {
-    showTestnetWarning('⚠️ TESTNET ONLY!');
+    setTimeout(() => {
+      if (walletAddress) loadContractData();
+    }, 1000);
+  } catch (switchError) {
+    console.log('Chain switch attempt:', switchError.code);
+    if (switchError.code === 4902) {
+      console.log('Chain not in wallet, but continuing...');
+      currentChain = chainKey;
+      document.getElementById('chainSelect').value = chainKey;
+      if (walletAddress) {
+        setTimeout(() => loadContractData(), 500);
+      }
+    } else {
+      showTestnetWarning('⚠️ TESTNET ONLY!');
+    }
   }
 }
 
@@ -758,7 +770,7 @@ async function mintNFT() {
     btn.disabled = false;
     btn.textContent = '🎨 Mint Checkmate NFT';
     
-    setTimeout(() => loadContractData(), 3000);
+    setTimeout(() => loadContractData(), 5000);
   } catch (e) {
     showToast('Error: ' + e.message.slice(0, 50));
     document.getElementById('nftBtn').disabled = false;
