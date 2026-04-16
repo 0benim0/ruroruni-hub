@@ -341,7 +341,7 @@ const CHAINS = {
     name: 'ARC Testnet',
     chainId: '0x4cef52',
     chainIdDec: 5042002,
-    rpc: 'wss://arc-testnet.drpc.org',
+    rpc: 'https://arc-testnet.drpc.org',
     contractAddress: '0x50718E9194595540fF7Ef81EC31AaC15a7Ae4ac8'
   }
 };
@@ -517,6 +517,22 @@ async function connectWallet() {
 async function switchChain() {
   const selected = document.getElementById('chainSelect').value;
   await switchToTestnet(selected);
+  
+  // Auto-Reconnect nach Chain-Switch
+  if (walletAddress) {
+    try {
+      const chain = CHAINS[currentChain];
+      provider = new ethers.BrowserProvider(window.ethereum);
+      signer = await provider.getSigner();
+      contract = new ethers.Contract(chain.contractAddress, CONTRACT_ABI, signer);
+      
+      showToast('✅ Reconnected to ' + CHAINS[currentChain].name);
+      loadContractData();
+    } catch (e) {
+      console.error('Reconnect error:', e);
+      showToast('⚠️ Manual reconnect needed');
+    }
+  }
   
   // Update UI
   document.getElementById('homeChain').textContent = CHAINS[currentChain].name;
