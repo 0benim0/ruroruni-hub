@@ -34,6 +34,9 @@ nav{position:fixed;top:120px;left:0;right:0;z-index:99;background:var(--surface)
 .nav-btn.active{color:var(--light-blue);border-bottom-color:var(--light-blue);}
 .nav-btn:hover{color:var(--light-blue);}
 
+/* Deploy Button Spezial - bleibt grün */
+.nav-btn:nth-child(5).active{color:#4fffb0;border-bottom-color:#4fffb0;}
+
 main{margin-top:200px;padding:30px;max-width:1000px;margin-left:auto;margin-right:auto;}
 .page{display:none;}
 .page.active{display:block;}
@@ -106,6 +109,7 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
 <header>
   <div class="logo">Rurou<span>niYu</span> Hub</div>
   <div class="header-right">
+    <button id="faucetBtn" onclick="openFaucet()" style="padding:8px 12px;background:var(--light-blue);border:none;border-radius:8px;color:#000;font-size:12px;cursor:pointer;font-weight:600;">💧 Faucet</button>
     <select id="chainSelect" onchange="switchChain()" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;">
       <option value="robinhood">🔴 Robinhood</option>
       <option value="arc">🟠 ARC</option>
@@ -157,15 +161,6 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
         <div class="stat-value" id="homeNFTs">0</div>
       </div>
     </div>
-  </div>
-
-  <div class="card">
-    <h2>🌍 Global NFT Status</h2>
-    <div class="global-stat">
-      Available: <span id="nftAvailableHome">?</span> / 9999
-      <button onclick="loadContractData()" style="margin-left:10px;padding:6px 12px;background:#000;border:none;border-radius:4px;color:var(--light-blue);cursor:pointer;font-weight:600;font-size:11px;">🔄</button>
-    </div>
-    <div id="nftDebug" style="font-size:11px;color:var(--muted);padding:10px;background:var(--surface2);border-radius:8px;display:none;"></div>
   </div>
 </div>
 
@@ -255,13 +250,14 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
   
   <div class="card">
     <h2>Deploy Info</h2>
+    <p style="color:var(--muted);margin-bottom:20px;font-size:13px;">Log your contract deployments on this chain. Each deployment is recorded on-chain!</p>
     <div style="margin-bottom:15px;">
-      <label style="display:block;margin-bottom:8px;color:var(--muted);font-size:12px;">Contract Type</label>
+      <label style="display:block;margin-bottom:8px;color:var(--muted);font-size:12px;">Contract Type (e.g., ERC20, NFT, DEX, Bridge)</label>
       <input type="text" id="deployType" placeholder="e.g. ERC20, NFT, DEX" style="width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:15px;">
     </div>
     <div style="margin-bottom:15px;">
       <label style="display:block;margin-bottom:8px;color:var(--muted);font-size:12px;">Contract Name</label>
-      <input type="text" id="deployName" placeholder="e.g. MyToken, MyNFT" style="width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:15px;">
+      <input type="text" id="deployName" placeholder="e.g. MyToken, MyNFT, MyBridge" style="width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:15px;">
     </div>
     <button class="btn" id="deployBtn" onclick="logDeploy()" style="width:100%;padding:15px;">📝 Log Deploy</button>
     <div id="deployAlert" style="margin-top:20px;"></div>
@@ -465,6 +461,20 @@ function initChainListeners() {
     window.ethereum.on('accountsChanged', () => {
       location.reload();
     });
+  }
+}
+
+// ============ FAUCET ============
+function openFaucet() {
+  const faucetUrls = {
+    robinhood: 'https://faucet.testnet.chain.robinhood.com/',
+    arc: 'https://faucet.circle.com/'
+  };
+  
+  const url = faucetUrls[currentChain];
+  if (url) {
+    window.open(url, '_blank');
+    showToast('🚰 Opening ' + CHAINS[currentChain].name + ' Faucet...');
   }
 }
 
