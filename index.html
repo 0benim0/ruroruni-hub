@@ -534,6 +534,9 @@ async function switchChain() {
     }
   }
   
+  // Lade Mines für neue Chain
+  initMines();
+  
   // Update UI
   document.getElementById('homeChain').textContent = CHAINS[currentChain].name;
   document.getElementById('profileChain').textContent = CHAINS[currentChain].name;
@@ -721,8 +724,22 @@ async function gmCheckIn() {
 let mineGrid = [];
 
 function initMines() {
-  mineGrid = Array(25).fill(0);
+  // Lade Grid für aktuelle Chain
+  const gridKey = `mineGrid_${currentChain}`;
+  const saved = localStorage.getItem(gridKey);
+  
+  if (saved) {
+    mineGrid = JSON.parse(saved);
+  } else {
+    mineGrid = Array(25).fill(0);
+  }
+  
   renderMines();
+}
+
+function saveMineGrid() {
+  const gridKey = `mineGrid_${currentChain}`;
+  localStorage.setItem(gridKey, JSON.stringify(mineGrid));
 }
 
 function renderMines() {
@@ -746,6 +763,7 @@ async function revealMine(index) {
     await tx.wait();
 
     mineGrid[index] = 1;
+    saveMineGrid();
     renderMines();
     showToast('⛏️ Mine revealed!');
     setTimeout(() => loadContractData(), 2000);
@@ -755,7 +773,9 @@ async function revealMine(index) {
 }
 
 function resetMines() {
-  initMines();
+  mineGrid = Array(25).fill(0);
+  saveMineGrid();
+  renderMines();
 }
 
 // ============ NFT MINT ============
