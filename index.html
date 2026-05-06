@@ -114,6 +114,7 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
       <option value="robinhood">🔴 Robinhood</option>
       <option value="arc">🟠 ARC</option>
     </select>
+    <button onclick="goToUpbitGIWA()" style="padding:8px 12px;background:linear-gradient(135deg,#9D4EDD,#7c6fff);border:none;border-radius:8px;color:#fff;font-size:12px;cursor:pointer;font-weight:600;">🚀 Upbit GIWA</button>
     <div class="wallet-status" id="walletStatus" onclick="toggleWallet()">
       <span id="walletText">🔌 Connect</span>
     </div>
@@ -339,6 +340,13 @@ const CHAINS = {
     chainIdDec: 5042002,
     rpc: 'https://arc-testnet.drpc.org',
     contractAddress: '0x50718E9194595540fF7Ef81EC31AaC15a7Ae4ac8'
+  },
+  dac: {
+    name: 'DAC Testnet',
+    chainId: '0x5586',
+    chainIdDec: 21894,
+    rpc: 'https://rpctest.dachain.tech',
+    contractAddress: '0x005664963060E96f630264bEbA5D0F7241B6502E'
   }
 };
 
@@ -403,7 +411,7 @@ async function validateTestnet() {
     const chainId = window.ethereum.chainId;
     const chainIdDec = parseInt(chainId, 16);
 
-    const testnets = [46630, 5042002];
+    const testnets = [46630, 5042002, 21894];
     if (!testnets.includes(chainIdDec)) {
       showTestnetWarning('⚠️ WRONG NETWORK! Switching to Robinhood Testnet...');
       await switchToTestnet('robinhood');
@@ -476,6 +484,11 @@ function openFaucet() {
     window.open(url, '_blank');
     showToast('🚰 Opening ' + CHAINS[currentChain].name + ' Faucet...');
   }
+}
+
+// ============ UPBIT GIWA ============
+function goToUpbitGIWA() {
+  window.open('https://upbit-giwa.vercel.app', '_blank');
 }
 
 // ============ WALLET ============
