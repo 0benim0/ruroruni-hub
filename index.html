@@ -221,13 +221,14 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
 
   <!-- FLAPPY BIRD GAME CARD -->
   <div class="card">
-    <h2>🐦 Flappy Bird Game</h2>
+    <h2>🎮 Tetris Game</h2>
     <div style="text-align:center;margin-bottom:20px;">
-      <canvas id="gameCanvas" width="400" height="300" style="border:2px solid var(--light-blue);border-radius:8px;background:#000;display:block;margin:0 auto;"></canvas>
+      <canvas id="gameCanvas" width="200" height="400" style="border:2px solid var(--light-blue);border-radius:8px;background:#000;display:block;margin:0 auto;"></canvas>
     </div>
     <div style="text-align:center;margin-bottom:15px;">
+      <div style="font-size:14px;color:var(--muted);margin-bottom:10px;">Controls: ← → or A D = Move | ↓ or S = Drop</div>
       <div style="font-size:24px;font-weight:bold;color:var(--light-blue);margin-bottom:10px;">Score: <span id="gameScore">0</span></div>
-      <button class="btn" id="gameBtn" onclick="startGame()" style="width:100%;padding:12px;margin-bottom:10px;">▶️ Play Game</button>
+      <button class="btn" id="gameBtn" onclick="startGame()" style="width:100%;padding:12px;margin-bottom:10px;">▶️ Play Tetris</button>
       <button class="btn" id="claimBtn" onclick="claimGameScore()" style="width:100%;padding:12px;background:var(--accent2);display:none;">✅ Claim Score</button>
     </div>
     <div id="gameAlert" style="text-align:center;color:var(--light-blue);font-size:12px;"></div>
@@ -934,21 +935,51 @@ async function logDeploy() {
   }
 }
 
-// ============ FLAPPY BIRD GAME ============
+// ============ TETRIS GAME ============
 let gameCanvas, gameCtx;
 let gameActive = false;
 let gameScore = 0;
-let bird = { x: 50, y: 150, width: 20, height: 20, velocity: 0 };
-let pipes = [];
-let pipeGap = 100;
+const GRID_WIDTH = 10;
+const GRID_HEIGHT = 20;
+const BLOCK_SIZE = 20;
+let grid = [];
+let currentPiece = null;
+let nextPiece = null;
+
+// Tetromino shapes
+const TETROMINOS = [
+  { shape: [[1,1,1,1]], color: '#00d9ff' }, // I
+  { shape: [[1,1],[1,1]], color: '#FFD700' }, // O
+  { shape: [[0,1,0],[1,1,1]], color: '#9D4EDD' }, // T
+  { shape: [[1,0,0],[1,1,1]], color: '#FF6B6B' }, // L
+  { shape: [[0,0,1],[1,1,1]], color: '#4fffb0' }, // J
+  { shape: [[1,1,0],[0,1,1]], color: '#ff9100' }, // S
+  { shape: [[0,1,1],[1,1,0]], color: '#ff1744' }  // Z
+];
+
+function initGrid() {
+  grid = [];
+  for (let y = 0; y < GRID_HEIGHT; y++) {
+    grid[y] = [];
+    for (let x = 0; x < GRID_WIDTH; x++) {
+      grid[y][x] = 0;
+    }
+  }
+}
+
+function getRandomTetromino() {
+  return TETROMINOS[Math.floor(Math.random() * TETROMINOS.length)];
+}
 
 function startGame() {
   gameCanvas = document.getElementById('gameCanvas');
   gameCtx = gameCanvas.getContext('2d');
   gameActive = true;
   gameScore = 0;
-  bird = { x: 50, y: 150, width: 20, height: 20, velocity: 0 };
-  pipes = [];
+  
+  initGrid();
+  currentPiece = { tetromino: getRandomTetromino(), x: 3, y: 0 };
+  nextPiece = getRandomTetromino();
   
   document.getElementById('gameBtn').style.display = 'none';
   document.getElementById('claimBtn').style.display = 'none';
@@ -957,63 +988,123 @@ function startGame() {
   gameLoop();
 }
 
-function gameLoop() {
-  // Clear canvas
+function drawGrid() {
   gameCtx.fillStyle = '#000';
   gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
   
-  if (!gameActive) return;
-  
-  // Bird physics
-  bird.velocity += 0.5;
-  bird.y += bird.velocity;
-  
-  // Draw bird
-  gameCtx.fillStyle = '#FFD700';
-  gameCtx.fillRect(bird.x, bird.y, bird.width, bird.height);
-  
-  // Add pipes
-  if (pipes.length === 0 || pipes[pipes.length - 1].x < gameCanvas.width - 150) {
-    let gapStart = Math.random() * (gameCanvas.height - pipeGap - 50) + 25;
-    pipes.push({ x: gameCanvas.width, gapStart: gapStart });
+  // Draw grid lines
+  gameCtx.strokeStyle = 'rgba(0,217,255,0.1)';
+  gameCtx.lineWidth = 1;
+  for (let i = 0; i <= GRID_WIDTH; i++) {
+    gameCtx.beginPath();
+    gameCtx.moveTo(i * BLOCK_SIZE, 0);
+    gameCtx.lineTo(i * BLOCK_SIZE, GRID_HEIGHT * BLOCK_SIZE);
+    gameCtx.stroke();
+  }
+  for (let i = 0; i <= GRID_HEIGHT; i++) {
+    gameCtx.beginPath();
+    gameCtx.moveTo(0, i * BLOCK_SIZE);
+    gameCtx.lineTo(GRID_WIDTH * BLOCK_SIZE, i * BLOCK_SIZE);
+    gameCtx.stroke();
   }
   
-  // Draw and move pipes
-  gameCtx.fillStyle = '#00d9ff';
-  for (let i = 0; i < pipes.length; i++) {
-    pipes[i].x -= 5;
-    
-    // Top pipe
-    gameCtx.fillRect(pipes[i].x, 0, 40, pipes[i].gapStart);
-    // Bottom pipe
-    gameCtx.fillRect(pipes[i].x, pipes[i].gapStart + pipeGap, 40, gameCanvas.height);
-    
-    // Check collision & scoring
-    if (pipes[i].x === bird.x && !pipes[i].scored) {
-      gameScore += 10;
-      pipes[i].scored = true;
-      document.getElementById('gameScore').textContent = gameScore;
+  // Draw placed blocks
+  for (let y = 0; y < GRID_HEIGHT; y++) {
+    for (let x = 0; x < GRID_WIDTH; x++) {
+      if (grid[y][x]) {
+        gameCtx.fillStyle = grid[y][x];
+        gameCtx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+      }
     }
-    
-    // Check hit
-    if (bird.x < pipes[i].x + 40 && bird.x + bird.width > pipes[i].x) {
-      if (bird.y < pipes[i].gapStart || bird.y + bird.height > pipes[i].gapStart + pipeGap) {
-        endGame();
-        return;
+  }
+  
+  // Draw current piece
+  if (currentPiece) {
+    gameCtx.fillStyle = currentPiece.tetromino.color;
+    for (let row = 0; row < currentPiece.tetromino.shape.length; row++) {
+      for (let col = 0; col < currentPiece.tetromino.shape[row].length; col++) {
+        if (currentPiece.tetromino.shape[row][col]) {
+          gameCtx.fillRect(
+            (currentPiece.x + col) * BLOCK_SIZE,
+            (currentPiece.y + row) * BLOCK_SIZE,
+            BLOCK_SIZE - 1,
+            BLOCK_SIZE - 1
+          );
+        }
+      }
+    }
+  }
+}
+
+function canMove(piece, newX, newY) {
+  for (let row = 0; row < piece.tetromino.shape.length; row++) {
+    for (let col = 0; col < piece.tetromino.shape[row].length; col++) {
+      if (piece.tetromino.shape[row][col]) {
+        let x = newX + col;
+        let y = newY + row;
+        
+        if (x < 0 || x >= GRID_WIDTH || y >= GRID_HEIGHT) return false;
+        if (y >= 0 && grid[y][x]) return false;
+      }
+    }
+  }
+  return true;
+}
+
+function placePiece() {
+  for (let row = 0; row < currentPiece.tetromino.shape.length; row++) {
+    for (let col = 0; col < currentPiece.tetromino.shape[row].length; col++) {
+      if (currentPiece.tetromino.shape[row][col]) {
+        let x = currentPiece.x + col;
+        let y = currentPiece.y + row;
+        if (y >= 0) {
+          grid[y][x] = currentPiece.tetromino.color;
+        }
+      }
+    }
+  }
+  
+  clearLines();
+  currentPiece = { tetromino: nextPiece, x: 3, y: 0 };
+  nextPiece = getRandomTetromino();
+  
+  if (!canMove(currentPiece, currentPiece.x, currentPiece.y)) {
+    endGame();
+  }
+}
+
+function clearLines() {
+  for (let y = GRID_HEIGHT - 1; y >= 0; y--) {
+    let fullLine = true;
+    for (let x = 0; x < GRID_WIDTH; x++) {
+      if (!grid[y][x]) {
+        fullLine = false;
+        break;
       }
     }
     
-    // Remove off-screen pipes
-    if (pipes[i].x < -40) pipes.splice(i, 1);
+    if (fullLine) {
+      grid.splice(y, 1);
+      grid.unshift(new Array(GRID_WIDTH).fill(0));
+      gameScore += 10;
+      document.getElementById('gameScore').textContent = gameScore;
+      y++;
+    }
+  }
+}
+
+function gameLoop() {
+  if (!gameActive) return;
+  
+  drawGrid();
+  
+  if (canMove(currentPiece, currentPiece.x, currentPiece.y + 1)) {
+    currentPiece.y++;
+  } else {
+    placePiece();
   }
   
-  // Collision with ceiling/floor
-  if (bird.y < 0 || bird.y + bird.height > gameCanvas.height) {
-    endGame();
-    return;
-  }
-  
-  requestAnimationFrame(gameLoop);
+  setTimeout(() => gameLoop(), 500);
 }
 
 function endGame() {
@@ -1023,11 +1114,37 @@ function endGame() {
   document.getElementById('claimBtn').style.display = 'inline-block';
 }
 
-// Click to jump
+// Keyboard controls
 document.addEventListener('keydown', (e) => {
-  if (e.key === ' ' && gameActive) {
-    bird.velocity = -10;
-    e.preventDefault();
+  if (!gameActive) return;
+  
+  switch(e.key) {
+    case 'ArrowLeft':
+    case 'a':
+    case 'A':
+      if (canMove(currentPiece, currentPiece.x - 1, currentPiece.y)) {
+        currentPiece.x--;
+      }
+      e.preventDefault();
+      break;
+    case 'ArrowRight':
+    case 'd':
+    case 'D':
+      if (canMove(currentPiece, currentPiece.x + 1, currentPiece.y)) {
+        currentPiece.x++;
+      }
+      e.preventDefault();
+      break;
+    case 'ArrowDown':
+    case 's':
+    case 'S':
+      if (canMove(currentPiece, currentPiece.x, currentPiece.y + 1)) {
+        currentPiece.y++;
+        gameScore += 1;
+        document.getElementById('gameScore').textContent = gameScore;
+      }
+      e.preventDefault();
+      break;
   }
 });
 
