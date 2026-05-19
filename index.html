@@ -345,17 +345,21 @@ const CHAINS = {
   },
   giwa: {
     name: 'GIWA Sepolia',
-    chainId: '0x16476',
+    chainId: '0x164ce',
     chainIdDec: 91342,
-    rpc: 'https://rpc.testnet.chain.giwa.io',
-    contractAddress: '0x31e68F7b2e1cC623EaFe10493A1db16C330aCfAD'
+    rpc: 'https://sepolia-rpc.giwa.io',
+    contractAddress: '0x31e68F7b2e1cC623EaFe10493A1db16C330aCfAD',
+    currencyName: 'ETH',
+    currencySymbol: 'ETH'
   },
   ink: {
     name: 'INK Sepolia',
-    chainId: '0xba5fd',
+    chainId: '0xba5ed',
     chainIdDec: 763373,
-    rpc: 'https://rpc-sepolia.ink.technology',
-    contractAddress: '0x2Ab6E0364593C59018C49130602B4fBBEE77eEBd'
+    rpc: 'https://ink-sepolia.drpc.org',
+    contractAddress: '0x2Ab6E0364593C59018C49130602B4fBBEE77eEBd',
+    currencyName: 'ETH',
+    currencySymbol: 'ETH'
   }
 };
 
@@ -459,8 +463,8 @@ async function switchToTestnet(chainKey) {
             chainName: chain.name,
             rpcUrls: [chain.rpc],
             nativeCurrency: { 
-              name: 'ETH', 
-              symbol: 'ETH', 
+              name: chain.currencyName || 'ETH', 
+              symbol: chain.currencySymbol || 'ETH', 
               decimals: 18 
             }
           }]
