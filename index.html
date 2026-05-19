@@ -446,16 +446,49 @@ async function switchToTestnet(chainKey) {
       if (walletAddress) loadContractData();
     }, 1000);
   } catch (switchError) {
-    console.log('Chain switch attempt:', switchError.code);
+    console.log('Chain switch error:', switchError.code);
     if (switchError.code === 4902) {
-      console.log('Chain not in wallet, but continuing...');
-      currentChain = chainKey;
-      document.getElementById('chainSelect').value = chainKey;
-      if (walletAddress) {
-        setTimeout(() => loadContractData(), 500);
+      // Chain nicht in MetaMask - MUSS hinzugefügt werden!
+      console.log('Adding chain to MetaMask:', chainKey);
+      try {
+        const chain = CHAINS[chainKey];
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: chain.chainId,
+            chainName: chain.name,
+            rpcUrls: [chain.rpc],
+            nativeCurrency: { 
+              name: 'ETH', 
+              symbol: 'ETH', 
+              decimals: 18 
+            }
+          }]
+        });
+        
+        // Nach hinzufügen - nochmal switchen
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: chain.chainId }]
+        });
+        
+        currentChain = chainKey;
+        document.getElementById('chainSelect').value = chainKey;
+        hideTestnetWarning();
+        showToast('✅ ' + chain.name + ' added and switched!');
+        
+        if (walletAddress) {
+          setTimeout(() => loadContractData(), 1500);
+        }
+      } catch (addError) {
+        console.error('Add chain failed:', addError);
+        showToast('❌ Failed to add chain: ' + addError.message);
+        document.getElementById('chainSelect').value = currentChain;
       }
     } else {
-      showTestnetWarning('⚠️ TESTNET ONLY!');
+      console.error('Switch error:', switchError.message);
+      showToast('❌ Chain switch failed');
+      document.getElementById('chainSelect').value = currentChain;
     }
   }
 }
