@@ -221,17 +221,45 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
 
   <!-- FLAPPY BIRD GAME CARD -->
   <div class="card">
-    <h2>🎮 Tetris Game</h2>
-    <div style="text-align:center;margin-bottom:20px;">
-      <canvas id="gameCanvas" width="200" height="400" style="border:2px solid var(--light-blue);border-radius:8px;background:#000;display:block;margin:0 auto;"></canvas>
+    <h2>🎮 Game Center</h2>
+    <div style="display:flex;gap:10px;margin-bottom:20px;">
+      <button class="btn" id="gameToggleTetris" onclick="toggleGame('tetris')" style="flex:1;background:var(--light-blue);color:#000;">🧩 Tetris</button>
+      <button class="btn" id="gameToggleFlappy" onclick="toggleGame('flappy')" style="flex:1;background:transparent;border:2px solid var(--light-blue);">🐦 Flappy Bird</button>
     </div>
-    <div style="text-align:center;margin-bottom:15px;">
-      <div style="font-size:14px;color:var(--muted);margin-bottom:10px;">Controls: ← → or A D = Move | ↓ or S = Drop</div>
-      <div style="font-size:24px;font-weight:bold;color:var(--light-blue);margin-bottom:10px;">Score: <span id="gameScore">0</span></div>
-      <button class="btn" id="gameBtn" onclick="startGame()" style="width:100%;padding:12px;margin-bottom:10px;">▶️ Play Tetris</button>
-      <button class="btn" id="claimBtn" onclick="claimGameScore()" style="width:100%;padding:12px;background:var(--accent2);display:none;">✅ Claim Score</button>
+
+    <!-- TETRIS -->
+    <div id="tetrisGame" style="display:block;">
+      <div style="text-align:center;margin-bottom:20px;">
+        <canvas id="gameCanvas" width="200" height="400" style="border:2px solid var(--light-blue);border-radius:8px;background:#000;display:block;margin:0 auto;"></canvas>
+      </div>
+      <div style="text-align:center;margin-bottom:15px;color:var(--muted);font-size:12px;">
+        <strong>CONTROLS:</strong><br>
+        ← → or A/D = Move | ↓ or S = Drop | SPACE = Rotate
+      </div>
+      <div style="text-align:center;margin-bottom:15px;">
+        <div style="font-size:24px;font-weight:bold;color:var(--light-blue);margin-bottom:10px;">Score: <span id="gameScore">0</span></div>
+        <button class="btn" id="gameBtn" onclick="startGame('tetris')" style="width:100%;padding:12px;margin-bottom:10px;">▶️ Play Tetris</button>
+        <button class="btn" id="claimBtn" onclick="claimGameScore()" style="width:100%;padding:12px;background:var(--accent2);display:none;">✅ Claim Score</button>
+      </div>
+      <div id="gameAlert" style="text-align:center;color:var(--light-blue);font-size:12px;"></div>
     </div>
-    <div id="gameAlert" style="text-align:center;color:var(--light-blue);font-size:12px;"></div>
+
+    <!-- FLAPPY BIRD -->
+    <div id="flappyGame" style="display:none;">
+      <div style="text-align:center;margin-bottom:20px;">
+        <canvas id="flappyCanvas" width="400" height="300" style="border:2px solid var(--light-blue);border-radius:8px;background:#000;display:block;margin:0 auto;"></canvas>
+      </div>
+      <div style="text-align:center;margin-bottom:15px;color:var(--muted);font-size:12px;">
+        <strong>CONTROLS:</strong><br>
+        SPACE = Jump | Avoid pipes | Pass pipe = +10 points
+      </div>
+      <div style="text-align:center;margin-bottom:15px;">
+        <div style="font-size:24px;font-weight:bold;color:var(--light-blue);margin-bottom:10px;">Score: <span id="flappyScore">0</span></div>
+        <button class="btn" id="flappyBtn" onclick="startGame('flappy')" style="width:100%;padding:12px;margin-bottom:10px;">▶️ Play Flappy Bird</button>
+        <button class="btn" id="flappyClaimBtn" onclick="claimGameScore()" style="width:100%;padding:12px;background:var(--accent2);display:none;">✅ Claim Score</button>
+      </div>
+      <div id="flappyAlert" style="text-align:center;color:var(--light-blue);font-size:12px;"></div>
+    </div>
   </div>
 
   <!-- STATS CARD -->
@@ -935,6 +963,30 @@ async function logDeploy() {
   }
 }
 
+// ============ GAME TOGGLE ============
+let currentGameType = 'tetris';
+
+function toggleGame(type) {
+  currentGameType = type;
+  gameActive = false;
+  
+  if (type === 'tetris') {
+    document.getElementById('tetrisGame').style.display = 'block';
+    document.getElementById('flappyGame').style.display = 'none';
+    document.getElementById('gameToggleTetris').style.background = 'var(--light-blue)';
+    document.getElementById('gameToggleTetris').style.color = '#000';
+    document.getElementById('gameToggleFlappy').style.background = 'transparent';
+    document.getElementById('gameToggleFlappy').style.color = 'var(--text)';
+  } else {
+    document.getElementById('tetrisGame').style.display = 'none';
+    document.getElementById('flappyGame').style.display = 'block';
+    document.getElementById('gameToggleTetris').style.background = 'transparent';
+    document.getElementById('gameToggleTetris').style.color = 'var(--text)';
+    document.getElementById('gameToggleFlappy').style.background = 'var(--light-blue)';
+    document.getElementById('gameToggleFlappy').style.color = '#000';
+  }
+}
+
 // ============ TETRIS GAME ============
 let gameCanvas, gameCtx;
 let gameActive = false;
@@ -946,15 +998,14 @@ let grid = [];
 let currentPiece = null;
 let nextPiece = null;
 
-// Tetromino shapes
 const TETROMINOS = [
-  { shape: [[1,1,1,1]], color: '#00d9ff' }, // I
-  { shape: [[1,1],[1,1]], color: '#FFD700' }, // O
-  { shape: [[0,1,0],[1,1,1]], color: '#9D4EDD' }, // T
-  { shape: [[1,0,0],[1,1,1]], color: '#FF6B6B' }, // L
-  { shape: [[0,0,1],[1,1,1]], color: '#4fffb0' }, // J
-  { shape: [[1,1,0],[0,1,1]], color: '#ff9100' }, // S
-  { shape: [[0,1,1],[1,1,0]], color: '#ff1744' }  // Z
+  { shape: [[1,1,1,1]], color: '#00d9ff' },
+  { shape: [[1,1],[1,1]], color: '#FFD700' },
+  { shape: [[0,1,0],[1,1,1]], color: '#9D4EDD' },
+  { shape: [[1,0,0],[1,1,1]], color: '#FF6B6B' },
+  { shape: [[0,0,1],[1,1,1]], color: '#4fffb0' },
+  { shape: [[1,1,0],[0,1,1]], color: '#ff9100' },
+  { shape: [[0,1,1],[1,1,0]], color: '#ff1744' }
 ];
 
 function initGrid() {
@@ -971,28 +1022,47 @@ function getRandomTetromino() {
   return TETROMINOS[Math.floor(Math.random() * TETROMINOS.length)];
 }
 
-function startGame() {
-  gameCanvas = document.getElementById('gameCanvas');
-  gameCtx = gameCanvas.getContext('2d');
-  gameActive = true;
-  gameScore = 0;
+function rotatePiece(piece) {
+  const rotated = [];
+  const shape = piece.tetromino.shape;
+  const size = shape.length;
   
-  initGrid();
-  currentPiece = { tetromino: getRandomTetromino(), x: 3, y: 0 };
-  nextPiece = getRandomTetromino();
+  for (let i = 0; i < shape[0].length; i++) {
+    const row = [];
+    for (let j = size - 1; j >= 0; j--) {
+      row.push(shape[j][i] || 0);
+    }
+    rotated.push(row);
+  }
   
-  document.getElementById('gameBtn').style.display = 'none';
-  document.getElementById('claimBtn').style.display = 'none';
-  document.getElementById('gameScore').textContent = '0';
-  
-  gameLoop();
+  return { ...piece, tetromino: { ...piece.tetromino, shape: rotated } };
+}
+
+function startGame(type) {
+  if (type === 'tetris') {
+    gameCanvas = document.getElementById('gameCanvas');
+    gameCtx = gameCanvas.getContext('2d');
+    gameActive = true;
+    gameScore = 0;
+    
+    initGrid();
+    currentPiece = { tetromino: getRandomTetromino(), x: 3, y: 0 };
+    nextPiece = getRandomTetromino();
+    
+    document.getElementById('gameBtn').style.display = 'none';
+    document.getElementById('claimBtn').style.display = 'none';
+    document.getElementById('gameScore').textContent = '0';
+    
+    tetrisGameLoop();
+  } else {
+    startFlappyGame();
+  }
 }
 
 function drawGrid() {
   gameCtx.fillStyle = '#000';
   gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
   
-  // Draw grid lines
   gameCtx.strokeStyle = 'rgba(0,217,255,0.1)';
   gameCtx.lineWidth = 1;
   for (let i = 0; i <= GRID_WIDTH; i++) {
@@ -1008,7 +1078,6 @@ function drawGrid() {
     gameCtx.stroke();
   }
   
-  // Draw placed blocks
   for (let y = 0; y < GRID_HEIGHT; y++) {
     for (let x = 0; x < GRID_WIDTH; x++) {
       if (grid[y][x]) {
@@ -1018,7 +1087,6 @@ function drawGrid() {
     }
   }
   
-  // Draw current piece
   if (currentPiece) {
     gameCtx.fillStyle = currentPiece.tetromino.color;
     for (let row = 0; row < currentPiece.tetromino.shape.length; row++) {
@@ -1069,7 +1137,7 @@ function placePiece() {
   nextPiece = getRandomTetromino();
   
   if (!canMove(currentPiece, currentPiece.x, currentPiece.y)) {
-    endGame();
+    endTetrisGame();
   }
 }
 
@@ -1093,8 +1161,8 @@ function clearLines() {
   }
 }
 
-function gameLoop() {
-  if (!gameActive) return;
+function tetrisGameLoop() {
+  if (!gameActive || currentGameType !== 'tetris') return;
   
   drawGrid();
   
@@ -1104,47 +1172,138 @@ function gameLoop() {
     placePiece();
   }
   
-  setTimeout(() => gameLoop(), 500);
+  setTimeout(() => tetrisGameLoop(), 500);
 }
 
-function endGame() {
+function endTetrisGame() {
   gameActive = false;
   document.getElementById('gameBtn').style.display = 'inline-block';
   document.getElementById('gameBtn').textContent = '▶️ Play Again';
   document.getElementById('claimBtn').style.display = 'inline-block';
 }
 
-// Keyboard controls
-document.addEventListener('keydown', (e) => {
-  if (!gameActive) return;
+// ============ FLAPPY BIRD GAME ============
+let flappyCanvas, flappyCtx;
+let flappyActive = false;
+let flappyScore = 0;
+let bird = { x: 50, y: 150, width: 20, height: 20, velocity: 0 };
+let pipes = [];
+let pipeGap = 100;
+
+function startFlappyGame() {
+  flappyCanvas = document.getElementById('flappyCanvas');
+  flappyCtx = flappyCanvas.getContext('2d');
+  flappyActive = true;
+  flappyScore = 0;
+  bird = { x: 50, y: 150, width: 20, height: 20, velocity: 0 };
+  pipes = [];
   
-  switch(e.key) {
-    case 'ArrowLeft':
-    case 'a':
-    case 'A':
-      if (canMove(currentPiece, currentPiece.x - 1, currentPiece.y)) {
-        currentPiece.x--;
+  document.getElementById('flappyBtn').style.display = 'none';
+  document.getElementById('flappyClaimBtn').style.display = 'none';
+  document.getElementById('flappyScore').textContent = '0';
+  
+  flappyGameLoop();
+}
+
+function flappyGameLoop() {
+  flappyCtx.fillStyle = '#000';
+  flappyCtx.fillRect(0, 0, flappyCanvas.width, flappyCanvas.height);
+  
+  if (!flappyActive || currentGameType !== 'flappy') return;
+  
+  bird.velocity += 0.5;
+  bird.y += bird.velocity;
+  
+  flappyCtx.fillStyle = '#FFD700';
+  flappyCtx.fillRect(bird.x, bird.y, bird.width, bird.height);
+  
+  if (pipes.length === 0 || pipes[pipes.length - 1].x < flappyCanvas.width - 150) {
+    let gapStart = Math.random() * (flappyCanvas.height - pipeGap - 50) + 25;
+    pipes.push({ x: flappyCanvas.width, gapStart: gapStart });
+  }
+  
+  flappyCtx.fillStyle = '#00d9ff';
+  for (let i = 0; i < pipes.length; i++) {
+    pipes[i].x -= 5;
+    
+    flappyCtx.fillRect(pipes[i].x, 0, 40, pipes[i].gapStart);
+    flappyCtx.fillRect(pipes[i].x, pipes[i].gapStart + pipeGap, 40, flappyCanvas.height);
+    
+    if (pipes[i].x === bird.x && !pipes[i].scored) {
+      flappyScore += 10;
+      pipes[i].scored = true;
+      document.getElementById('flappyScore').textContent = flappyScore;
+    }
+    
+    if (bird.x < pipes[i].x + 40 && bird.x + bird.width > pipes[i].x) {
+      if (bird.y < pipes[i].gapStart || bird.y + bird.height > pipes[i].gapStart + pipeGap) {
+        endFlappyGame();
+        return;
       }
+    }
+    
+    if (pipes[i].x < -40) pipes.splice(i, 1);
+  }
+  
+  if (bird.y < 0 || bird.y + bird.height > flappyCanvas.height) {
+    endFlappyGame();
+    return;
+  }
+  
+  requestAnimationFrame(flappyGameLoop);
+}
+
+function endFlappyGame() {
+  flappyActive = false;
+  document.getElementById('flappyBtn').style.display = 'inline-block';
+  document.getElementById('flappyBtn').textContent = '▶️ Play Again';
+  document.getElementById('flappyClaimBtn').style.display = 'inline-block';
+  gameScore = flappyScore;
+}
+
+// ============ KEYBOARD CONTROLS ============
+document.addEventListener('keydown', (e) => {
+  if (currentGameType === 'tetris' && gameActive) {
+    switch(e.key) {
+      case 'ArrowLeft':
+      case 'a':
+      case 'A':
+        if (canMove(currentPiece, currentPiece.x - 1, currentPiece.y)) {
+          currentPiece.x--;
+        }
+        e.preventDefault();
+        break;
+      case 'ArrowRight':
+      case 'd':
+      case 'D':
+        if (canMove(currentPiece, currentPiece.x + 1, currentPiece.y)) {
+          currentPiece.x++;
+        }
+        e.preventDefault();
+        break;
+      case 'ArrowDown':
+      case 's':
+      case 'S':
+        if (canMove(currentPiece, currentPiece.x, currentPiece.y + 1)) {
+          currentPiece.y++;
+          gameScore += 1;
+          document.getElementById('gameScore').textContent = gameScore;
+        }
+        e.preventDefault();
+        break;
+      case ' ':
+        const rotated = rotatePiece(currentPiece);
+        if (canMove(rotated, rotated.x, rotated.y)) {
+          currentPiece = rotated;
+        }
+        e.preventDefault();
+        break;
+    }
+  } else if (currentGameType === 'flappy' && flappyActive) {
+    if (e.key === ' ') {
+      bird.velocity = -10;
       e.preventDefault();
-      break;
-    case 'ArrowRight':
-    case 'd':
-    case 'D':
-      if (canMove(currentPiece, currentPiece.x + 1, currentPiece.y)) {
-        currentPiece.x++;
-      }
-      e.preventDefault();
-      break;
-    case 'ArrowDown':
-    case 's':
-    case 'S':
-      if (canMove(currentPiece, currentPiece.x, currentPiece.y + 1)) {
-        currentPiece.y++;
-        gameScore += 1;
-        document.getElementById('gameScore').textContent = gameScore;
-      }
-      e.preventDefault();
-      break;
+    }
   }
 });
 
