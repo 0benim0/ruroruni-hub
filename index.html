@@ -199,22 +199,46 @@ h1{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:10
   </div>
 </div>
 
-<!-- MINES PAGE -->
+<!-- GAME & DAILY QUEST PAGE -->
 <div class="page" id="mines">
-  <h1>Mines Game ⛏️</h1>
-  <p class="subtitle">5x5 Grid - Each click logs a transaction</p>
+  <h1>Daily Quest & Flappy Bird 🎮</h1>
+  <p class="subtitle">Complete your daily quest and play to earn rewards</p>
   
+  <!-- DAILY QUEST CARD -->
   <div class="card">
-    <div class="mines-grid" id="minesGrid"></div>
-    <button class="btn" id="resetBtn" onclick="resetMines()" style="width:100%;margin-bottom:15px;">🔄 Reset Grid</button>
-    <div id="mineAlert"></div>
+    <h2>📋 Daily Quest</h2>
+    <div id="dailyQuestDisplay" style="text-align:center;padding:20px;">
+      <div style="font-size:48px;margin-bottom:10px;" id="questEmoji">🎯</div>
+      <div style="font-size:18px;font-weight:bold;margin-bottom:10px;" id="questText">Loading Quest...</div>
+      <div style="color:var(--muted);font-size:14px;margin-bottom:20px;" id="questReward">+0 TX</div>
+      <div id="questProgress" style="background:var(--surface2);padding:15px;border-radius:8px;margin-bottom:15px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Progress:</div>
+        <div id="questProgressBar" style="width:0%;height:8px;background:var(--light-blue);border-radius:4px;transition:all 0.3s;"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;" id="questProgressText">0/0</div>
+      </div>
+    </div>
   </div>
 
+  <!-- FLAPPY BIRD GAME CARD -->
   <div class="card">
-    <h2>📊 Stats</h2>
+    <h2>🐦 Flappy Bird Game</h2>
+    <div style="text-align:center;margin-bottom:20px;">
+      <canvas id="gameCanvas" width="400" height="300" style="border:2px solid var(--light-blue);border-radius:8px;background:#000;display:block;margin:0 auto;"></canvas>
+    </div>
+    <div style="text-align:center;margin-bottom:15px;">
+      <div style="font-size:24px;font-weight:bold;color:var(--light-blue);margin-bottom:10px;">Score: <span id="gameScore">0</span></div>
+      <button class="btn" id="gameBtn" onclick="startGame()" style="width:100%;padding:12px;margin-bottom:10px;">▶️ Play Game</button>
+      <button class="btn" id="claimBtn" onclick="claimGameScore()" style="width:100%;padding:12px;background:var(--accent2);display:none;">✅ Claim Score</button>
+    </div>
+    <div id="gameAlert" style="text-align:center;color:var(--light-blue);font-size:12px;"></div>
+  </div>
+
+  <!-- STATS CARD -->
+  <div class="card">
+    <h2>📊 Game Stats</h2>
     <div class="stat">
-      <div class="stat-label">Mines Revealed</div>
-      <div class="stat-value" id="mineCount">0</div>
+      <div class="stat-label">Total Game Score</div>
+      <div class="stat-value" id="totalGameScore">0</div>
     </div>
   </div>
 </div>
@@ -334,14 +358,16 @@ const CHAINS = {
     chainId: '0xb626',
     chainIdDec: 46630,
     rpc: 'https://rpc.testnet.chain.robinhood.com',
-    contractAddress: '0x9165Fa5dA6d0468b43A0b37E160b8BA2D8A7c7d0'
+    contractAddress: '0x9165Fa5dA6d0468b43A0b37E160b8BA2D8A7c7d0',
+    gameHubAddress: '0x933E1472d47eecc32b59e0705DeD5e36A9c327ff'
   },
   arc: {
     name: 'ARC Testnet',
     chainId: '0x4cef52',
     chainIdDec: 5042002,
     rpc: 'https://arc-testnet.drpc.org',
-    contractAddress: '0x50718E9194595540fF7Ef81EC31AaC15a7Ae4ac8'
+    contractAddress: '0x50718E9194595540fF7Ef81EC31AaC15a7Ae4ac8',
+    gameHubAddress: '0x828413c1F4516e7C3c7C22DC1b1d1375fF193d6A'
   },
   giwa: {
     name: 'GIWA Sepolia',
@@ -349,6 +375,7 @@ const CHAINS = {
     chainIdDec: 91342,
     rpc: 'https://sepolia-rpc.giwa.io',
     contractAddress: '0x31e68F7b2e1cC623EaFe10493A1db16C330aCfAD',
+    gameHubAddress: '0xAC03b1325982BaA9475fC75Ff5e91733E7F5D1D4',
     currencyName: 'ETH',
     currencySymbol: 'ETH'
   },
@@ -358,6 +385,7 @@ const CHAINS = {
     chainIdDec: 763373,
     rpc: 'https://ink-sepolia.drpc.org',
     contractAddress: '0x2Ab6E0364593C59018C49130602B4fBBEE77eEBd',
+    gameHubAddress: '0x290d07b026fb39302Bf47d7bfACcFF3b2dAAf3eD',
     currencyName: 'ETH',
     currencySymbol: 'ETH'
   }
@@ -373,6 +401,12 @@ const CONTRACT_ABI = [
   "function getNFTSupply() external view returns (uint256)",
   "function nftSupply() external view returns (uint256)",
   "function getRecentTxLog(uint256 count) external view returns (tuple(address user, string txType, string label, uint256 timestamp)[])"
+];
+
+const GAME_HUB_ABI = [
+  "function logGameScore(uint256 score) external",
+  "function getUserScore(address user) external view returns (uint256)",
+  "function getRecentScores(uint256 count) external view returns (tuple(address user, uint256 score, uint256 timestamp)[])"
 ];
 
 let currentChain = 'robinhood';
@@ -900,8 +934,186 @@ async function logDeploy() {
   }
 }
 
+// ============ FLAPPY BIRD GAME ============
+let gameCanvas, gameCtx;
+let gameActive = false;
+let gameScore = 0;
+let bird = { x: 50, y: 150, width: 20, height: 20, velocity: 0 };
+let pipes = [];
+let pipeGap = 100;
+
+function startGame() {
+  gameCanvas = document.getElementById('gameCanvas');
+  gameCtx = gameCanvas.getContext('2d');
+  gameActive = true;
+  gameScore = 0;
+  bird = { x: 50, y: 150, width: 20, height: 20, velocity: 0 };
+  pipes = [];
+  
+  document.getElementById('gameBtn').style.display = 'none';
+  document.getElementById('claimBtn').style.display = 'none';
+  document.getElementById('gameScore').textContent = '0';
+  
+  gameLoop();
+}
+
+function gameLoop() {
+  // Clear canvas
+  gameCtx.fillStyle = '#000';
+  gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+  
+  if (!gameActive) return;
+  
+  // Bird physics
+  bird.velocity += 0.5;
+  bird.y += bird.velocity;
+  
+  // Draw bird
+  gameCtx.fillStyle = '#FFD700';
+  gameCtx.fillRect(bird.x, bird.y, bird.width, bird.height);
+  
+  // Add pipes
+  if (pipes.length === 0 || pipes[pipes.length - 1].x < gameCanvas.width - 150) {
+    let gapStart = Math.random() * (gameCanvas.height - pipeGap - 50) + 25;
+    pipes.push({ x: gameCanvas.width, gapStart: gapStart });
+  }
+  
+  // Draw and move pipes
+  gameCtx.fillStyle = '#00d9ff';
+  for (let i = 0; i < pipes.length; i++) {
+    pipes[i].x -= 5;
+    
+    // Top pipe
+    gameCtx.fillRect(pipes[i].x, 0, 40, pipes[i].gapStart);
+    // Bottom pipe
+    gameCtx.fillRect(pipes[i].x, pipes[i].gapStart + pipeGap, 40, gameCanvas.height);
+    
+    // Check collision & scoring
+    if (pipes[i].x === bird.x && !pipes[i].scored) {
+      gameScore += 10;
+      pipes[i].scored = true;
+      document.getElementById('gameScore').textContent = gameScore;
+    }
+    
+    // Check hit
+    if (bird.x < pipes[i].x + 40 && bird.x + bird.width > pipes[i].x) {
+      if (bird.y < pipes[i].gapStart || bird.y + bird.height > pipes[i].gapStart + pipeGap) {
+        endGame();
+        return;
+      }
+    }
+    
+    // Remove off-screen pipes
+    if (pipes[i].x < -40) pipes.splice(i, 1);
+  }
+  
+  // Collision with ceiling/floor
+  if (bird.y < 0 || bird.y + bird.height > gameCanvas.height) {
+    endGame();
+    return;
+  }
+  
+  requestAnimationFrame(gameLoop);
+}
+
+function endGame() {
+  gameActive = false;
+  document.getElementById('gameBtn').style.display = 'inline-block';
+  document.getElementById('gameBtn').textContent = '▶️ Play Again';
+  document.getElementById('claimBtn').style.display = 'inline-block';
+}
+
+// Click to jump
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ' && gameActive) {
+    bird.velocity = -10;
+    e.preventDefault();
+  }
+});
+
+// ============ CLAIM GAME SCORE ============
+let gameHubContract = null;
+
+async function claimGameScore() {
+  if (!contract || !walletAddress) {
+    showToast('Connect wallet first');
+    return;
+  }
+  
+  if (gameScore === 0) {
+    showToast('Play the game first!');
+    return;
+  }
+  
+  try {
+    const chain = CHAINS[currentChain];
+    gameHubContract = new ethers.Contract(chain.gameHubAddress, GAME_HUB_ABI, signer);
+    
+    const btn = document.getElementById('claimBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+    
+    const tx = await gameHubContract.logGameScore(gameScore);
+    showToast('Claiming score...');
+    await tx.wait();
+    
+    showToast('✅ Score Claimed! +' + gameScore + ' TX!');
+    
+    btn.disabled = false;
+    btn.textContent = '✅ Claimed';
+    btn.style.display = 'none';
+    
+    setTimeout(() => loadContractData(), 2000);
+    setTimeout(() => loadGameStats(), 3000);
+  } catch (e) {
+    showToast('Error: ' + e.message.slice(0, 50));
+    document.getElementById('claimBtn').disabled = false;
+  }
+}
+
+// ============ GAME STATS ============
+async function loadGameStats() {
+  if (!walletAddress || !gameHubContract) return;
+  
+  try {
+    const chain = CHAINS[currentChain];
+    gameHubContract = new ethers.Contract(chain.gameHubAddress, GAME_HUB_ABI, provider);
+    const score = await gameHubContract.getUserScore(walletAddress);
+    document.getElementById('totalGameScore').textContent = score.toString();
+  } catch (e) {
+    console.error('Game stats error:', e);
+  }
+}
+
+// ============ DAILY QUEST ============
+function initDailyQuest() {
+  const quests = [
+    { emoji: '🎨', text: 'Mint 2 NFTs', reward: '+8 TX' },
+    { emoji: '🚀', text: 'Deploy 2 Contracts', reward: '+8 TX' },
+    { emoji: '🐦', text: 'Play Flappy Bird 5x', reward: '+7 TX' }
+  ];
+  
+  const today = new Date().toDateString();
+  const savedQuest = localStorage.getItem('dailyQuest_' + today);
+  
+  let quest;
+  if (savedQuest) {
+    quest = JSON.parse(savedQuest);
+  } else {
+    quest = quests[Math.floor(Math.random() * quests.length)];
+    localStorage.setItem('dailyQuest_' + today, JSON.stringify(quest));
+  }
+  
+  document.getElementById('questEmoji').textContent = quest.emoji;
+  document.getElementById('questText').textContent = quest.text;
+  document.getElementById('questReward').textContent = quest.reward;
+  document.getElementById('questProgressBar').style.width = '0%';
+  document.getElementById('questProgressText').textContent = '0/Complete the quest';
+}
+
 // Init
-initMines();
+initDailyQuest();
+loadGameStats();
 document.getElementById('homeChain').textContent = CHAINS['robinhood'].name;
 document.getElementById('profileChain').textContent = CHAINS['robinhood'].name;
 </script>
